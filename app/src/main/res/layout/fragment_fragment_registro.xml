@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark"
+    tools:context=".FragmentRegistro">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="#fff"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/corre"
+            android:layout_width="228dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="45dp"
+            android:background="@color/colorAccent"
+            android:text="Logeate"
+            android:textAlignment="center"
+            android:textSize="30dp" />
+
+        <EditText
+            android:id="@+id/correo"
+            android:layout_width="339dp"
+            android:layout_height="57dp"
+            android:layout_centerInParent="true"
+            android:drawableLeft="@mipmap/ic_launcher_user"
+            android:inputType="textPersonName"
+            android:hint="Correo Electronico"/>
+
+        <EditText
+            android:id="@+id/Contraseña"
+            android:layout_width="340dp"
+            android:layout_height="59dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="166dp"
+            android:drawableLeft="@mipmap/ic_launcher_candado"
+            android:inputType="textPassword"
+            android:hint="Contraseña" />
+
+    </RelativeLayout>
+
+
+</RelativeLayout>
