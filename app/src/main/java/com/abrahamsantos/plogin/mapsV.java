@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.Console;
+import java.util.ArrayList;
 
 public class mapsV extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -32,6 +33,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     private Location loc;
     private Marker marcador;
     private double Latitude = 0.0, Longitude = 0.0;
+    private ArrayList<Camiones> puntos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,12 +43,23 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        puntos.add(new Camiones("Bolivar",19.4326077, -99.13320799999997));
+        puntos.add(new Camiones("Boca del rio",19.4326077, -99.13320799999997));
+        puntos.add(new Camiones("Norte sur",19.4326077, -99.13320799999997));
+        puntos.add(new Camiones("Revolucion",19.4326077, -99.13320799999997));
+        puntos.add(new Camiones("Volcanes",19.4326077, -99.13320799999997));
+
     }
 
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
+       for (Camiones bus: puntos) {
+            LatLng punBus = new LatLng(bus.getLatitud(),bus.getLongitud());
+            mMap.addMarker(new MarkerOptions().position(punBus).title(bus.getRuta()).icon(BitmapDescriptorFactory.fromResource(R.drawable.busstop)));
+        }
         UbicacionUser();
         /*LatLng usuario = new LatLng(loc.getLatitude(), loc.getLongitude());
         mMap.addMarker(new MarkerOptions().position(usuario).title("Marker of Abraham"));
@@ -65,7 +78,6 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
             marcador.remove();
         }
         marcador = mMap.addMarker(new MarkerOptions().position(user).title("Usuario"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(user, 18));
         mMap.animateCamera(ubicacion);
     }
 
@@ -81,7 +93,11 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     LocationListener listener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            UbicacionUser();
+            LatLng user = new LatLng(location.getLatitude(),location.getLongitude());
+            if(marcador!=null){
+                marcador.remove();
+            }
+            marcador = mMap.addMarker(new MarkerOptions().position(user).title("Usuario"));
         }
 
         @Override
@@ -101,12 +117,12 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     };
 
     private void UbicacionUser() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "No se dieron los permisos", Toast.LENGTH_LONG).show();
             return;
         } else{
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             Location lol = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 0, listener);
             Actualizar(lol);
