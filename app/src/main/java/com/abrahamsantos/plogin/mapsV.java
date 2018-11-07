@@ -81,7 +81,11 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     LocationListener listener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            UbicacionUser();
+            LatLng user = new LatLng(location.getLatitude(),location.getLongitude());
+            if(marcador!=null){
+                marcador.remove();
+            }
+            marcador = mMap.addMarker(new MarkerOptions().position(user).title("Usuario"));
         }
 
         @Override
@@ -101,12 +105,12 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     };
 
     private void UbicacionUser() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "No se dieron los permisos", Toast.LENGTH_LONG).show();
             return;
         } else{
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             Location lol = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 0, listener);
             Actualizar(lol);
