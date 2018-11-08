@@ -39,8 +39,19 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        /*----------------------*/
         rutas.add(new Ruta("Bolivar",new Parada(1,"asdQqssQwe","Bolivar fracc. asDa",13.78664,11.23423)));
         rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Chap fracc. asDa",17.78664,16.23423)));
+        /*----------------------*/
+        LatLng lt = null;
+        Ruta rt = null;
+        for(int i=0;i<2;i++){
+            rt = rutas.get(i);
+            lt = new LatLng(rt.getparada(i).getcoordenadaX(),rt.getparada(i).getcoordenadaY());
+            mMap.addMarker(new MarkerOptions().position(lt).title("Parada"+i));
+            rt = rutas.get(i);
+        }
+        /*----------------------*/
     }
 
 
@@ -48,26 +59,12 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-       /*for (Rutas ruta: rutas) {
-            LatLng punBus = new LatLng();
-            mMap.addMarker(new MarkerOptions().position(punBus).title("Hola xD");
-        }*/
-                                /*bus.getRuta()).icon(BitmapDescriptorFactory.fromResource(R.drawable.busstop))*/
-        /*UbicacionUser();
-        /*LatLng usuario = new LatLng(loc.getLatitude(), loc.getLongitude());
-        mMap.addMarker(new MarkerOptions().position(usuario).title("Marker of Abraham"));
-
-
-        LatLng bus = new LatLng(19.4326077, -99.13320799999997);
-        mMap.addMarker(new MarkerOptions().position(bus).title("Marker of Bus").icon(BitmapDescriptorFactory.fromResource(R.drawable.busstop)));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(bus));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(usuario, 14));*/
     }
 
     private void AgregarMarcador(double Latitude, double Longitude) {
         LatLng user = new LatLng(Latitude, Longitude);
-        CameraUpdate ubicacion =CameraUpdateFactory.newLatLngZoom(user,18);
-        if(marcador!=null){
+        CameraUpdate ubicacion = CameraUpdateFactory.newLatLngZoom(user,18);
+        if(marcador != null){
             marcador.remove();
         }
         marcador = mMap.addMarker(new MarkerOptions().position(user).title("Usuario"));

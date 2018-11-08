@@ -13,21 +13,21 @@ public class Parada {
         this.coordenadaY = y;
     }
 
-    private int getriesgo(){
+    protected int getriesgo(){
         return this.riesgo;
     }
 
-    private String getimagen(){
+    protected String getimagen(){
         return this.imagen;
     }
 
-    private String getdireccion(){return this.direccion;}
+    protected String getdireccion(){return this.direccion;}
 
-    private double getcoordenadaX(){
+    protected double getcoordenadaX(){
         return this.coordenadaX;
     }
 
-    private double getcoordenadaY(){
+    protected double getcoordenadaY(){
         return this.coordenadaY;
     }
 }

@@ -12,7 +12,7 @@ import android.widget.Button;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     CardView init;
     CardView regist;
-    Intent cambioPage=null;
+    Intent cambioPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
