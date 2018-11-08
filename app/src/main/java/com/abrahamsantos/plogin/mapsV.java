@@ -44,24 +44,19 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        LatLng lt;
+        Parada prd;
+        /*----------------------*/
         mMap = googleMap;
         /*----------------------*/
-        rutas.add(new Ruta("Bolivar",new Parada(1,"asdQqssQwe","Bolivar fracc. asDa",13.78664,11.23423)));
-        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Chap fracc. asDa",17.78664,16.23423)));
+        rutas.add(new Ruta("Bolivar",new Parada(1,"asdQqssQwe","Bolivar fracc. asDa",18.58664,-97.23423)));
+        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Chapultepec fracc. asDa",17.78664,16.23423)));
+        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Petrolera fracc. asDa",17.78664,16.23423)));
         /*----------------------*/
-        LatLng lt = null;
-        Ruta rt,rt2;
-
-        rt = rutas.get(0);
-        rt2 = rutas.get(1);
-        lt = new LatLng(rt.getparada(0).getcoordenadaX(),rt.getparada(0).getcoordenadaY());
-        mMap.addMarker(new MarkerOptions().position(lt).title(rt.getparada(0).getdireccion()));
-        mMap.addMarker(new MarkerOptions().position(lt).title(rt2.getparada(1).getdireccion()));
-        /*for(int i=0;i<2;i++){
-            rt = rutas.get(i);
-            lt = new LatLng(rt.getparada(i).getcoordenadaX(),rt.getparada(i).getcoordenadaY());
-            mMap.addMarker(new MarkerOptions().position(lt).title("Parada"));
-            rt = rutas.get(i);
+        for(Ruta rt: rutas){
+            prd = rt.getparada(0);
+            lt = new LatLng(prd.getcoordenadaX(),prd.getcoordenadaY());
+            mMap.addMarker(new MarkerOptions().position(lt).title(prd.getdireccion()));
         }
         /*----------------------*/
 
