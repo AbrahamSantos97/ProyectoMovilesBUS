@@ -21,9 +21,7 @@ public class Parada {
         return this.imagen;
     }
 
-    private String getdireccion(){
-
-    }
+    private String getdireccion(){return this.direccion;}
 
     private double getcoordenadaX(){
         return this.coordenadaX;

@@ -39,12 +39,8 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        rutas.add("Bolivar",new Parada(1,"asdQqssQwe","Bolivar fracc. asDa",13.78664,11.23423));
-        puntos.add(new Rutas("Boca del rio");
-        puntos.add(new Rutas("Norte sur");
-        puntos.add(new Rutas("Revolucion");
-        puntos.add(new Rutas("Volcanes");
-
+        rutas.add(new Ruta("Bolivar",new Parada(1,"asdQqssQwe","Bolivar fracc. asDa",13.78664,11.23423)));
+        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Chap fracc. asDa",17.78664,16.23423)));
     }
 
 
@@ -118,7 +114,6 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "No se dieron los permisos", Toast.LENGTH_LONG).show();
-            return;
         } else{
             Location lol = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 0, listener);
