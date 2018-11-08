@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Ruta {
     private String nombre;
-    public ArrayList<Parada> paradas;
+    public ArrayList<Parada> paradas = new ArrayList<>();
 
     public Ruta(String nombre,Parada parada){
         this.nombre = nombre;
