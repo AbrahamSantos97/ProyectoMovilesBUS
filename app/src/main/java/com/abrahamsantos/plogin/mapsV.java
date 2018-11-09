@@ -7,10 +7,14 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewStub;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
 
@@ -19,14 +23,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
-import java.io.Console;
-import java.util.ArrayList;
 
 public class mapsV extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -35,23 +34,22 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     private Location loc;
     private Marker marcador;
     private double Latitude = 0.0, Longitude = 0.0;
-    private ArrayList<Camiones> puntos;
+    private int clicBuscar=1;
+    AutoCompleteTextView Predic;
+    String [] nombres= {"Juan","Juanito","Julian","Maria","Maria Fernanda"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps_v);
-        android.support.v7.widget.Toolbar barra = findViewById(R.id.toolbar);
-        setSupportActionBar(barra);
+        Toolbar toolt = findViewById(R.id.toolz);
+        Predic = findViewById(R.id.textPredic);
+
+        setSupportActionBar(toolt);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        /*puntos.add(new Camiones("Bolivar",19.4326077, -99.13320799999997));
-        puntos.add(new Camiones("Boca del rio",19.4326077, -99.13320799999997));
-        puntos.add(new Camiones("Norte sur",19.4326077, -99.13320799999997));
-        puntos.add(new Camiones("Revolucion",19.4326077, -99.13320799999997));
-        puntos.add(new Camiones("Volcanes",19.4326077, -99.13320799999997));*/
 
     }
 
@@ -60,15 +58,32 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         return true;
     }
 
+    public boolean onOptionsItemSelected(MenuItem item){
+        if(item.getItemId()==R.id.busca){
+            if(clicBuscar==1){
+                Predic.setVisibility(View.VISIBLE);
+                clicBuscar=2;
+                LlenarAdapter();
+            }else{
+                clicBuscar=1;
+                Predic.setText("");
+                Predic.setVisibility(View.GONE);
+
+                //Aqui se debe de llamar a la funcion que recoja los datos del Predic
+            }
+        }
+        return true;
+    }
+
+    private void LlenarAdapter() {
+        ArrayAdapter<String> adaptador =new ArrayAdapter<String>(this,android.R.layout.simple_dropdown_item_1line,nombres);
+        Predic.setThreshold(2);
+        Predic.setAdapter(adaptador);
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        /*for (Camiones bus: puntos) {
-            LatLng punBus = new LatLng(bus.getLatitud(),bus.getLongitud());
-            mMap.addMarker(new MarkerOptions().position(punBus).title(bus.getRuta()).icon(BitmapDescriptorFactory.fromResource(R.drawable.busstop)));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(punBus,14));
-        }*/
         LatLng parada1 = new LatLng(19.4326077,-99.13320799999997);
         mMap.addMarker(new MarkerOptions().position(parada1).title("Parada1"));
 
@@ -77,18 +92,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
 
         LatLng parada3 = new LatLng(10.845,-67.34563);
         mMap.addMarker(new MarkerOptions().position(parada3).title("Parada3"));
-
-        //LatLng parada4 = new LatLng(19.4326077,-99.13320799999997);
-        //mMap.addMarker(new MarkerOptions().position(parada1).title("Parada1"));
         UbicacionUser();
-        /*LatLng usuario = new LatLng(loc.getLatitude(), loc.getLongitude());
-        mMap.addMarker(new MarkerOptions().position(usuario).title("Marker of Abraham"));*/
-
-
-        /*LatLng bus = new LatLng(19.4326077, -99.13320799999997);
-        mMap.addMarker(new MarkerOptions().position(bus).title("Marker of Bus").icon(BitmapDescriptorFactory.fromResource(R.drawable.busstop)));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(bus));
-        /mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(usuario, 14));*/
     }
 
     private void AgregarMarcador(double Latitude, double Longitude) {

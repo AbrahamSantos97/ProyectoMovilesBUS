@@ -23,6 +23,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 
 public class IniciarSesion extends AppCompatActivity implements View.OnClickListener {
+
     public static int bandera=0;
     public TextView textoButton,textoTitle;
     public CardView button;
@@ -31,6 +32,7 @@ public class IniciarSesion extends AppCompatActivity implements View.OnClickList
     public String password="";
     public FirebaseAuth auth;
     public ProgressDialog progress;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
