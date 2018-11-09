@@ -12,12 +12,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewStub;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
-
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -68,6 +67,8 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
                 clicBuscar=1;
                 Predic.setText("");
                 Predic.setVisibility(View.GONE);
+                InputMethodManager imn = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imn.hideSoftInputFromWindow(Predic.getWindowToken(),0);
 
                 //Aqui se debe de llamar a la funcion que recoja los datos del Predic
             }
