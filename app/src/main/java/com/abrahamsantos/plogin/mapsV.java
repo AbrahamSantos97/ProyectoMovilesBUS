@@ -26,6 +26,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+
 public class mapsV extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
 
     private GoogleMap mMap;
@@ -34,6 +36,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     private Marker marcador;
     private double Latitude = 0.0, Longitude = 0.0;
     private int clicBuscar=1;
+    ArrayList<Ruta> rutas = new ArrayList<>();
     AutoCompleteTextView Predic;
     String [] nombres= {"Juan","Juanito","Julian","Maria","Maria Fernanda"};
 
@@ -84,15 +87,22 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        LatLng lt;
+        Parada prd;
+        /*----------------------*/
         mMap = googleMap;
-        LatLng parada1 = new LatLng(19.4326077,-99.13320799999997);
-        mMap.addMarker(new MarkerOptions().position(parada1).title("Parada1"));
-
-        LatLng parada2 = new LatLng(0.0,0.0);
-        mMap.addMarker(new MarkerOptions().position(parada2).title("Parada2"));
-
-        LatLng parada3 = new LatLng(10.845,-67.34563);
-        mMap.addMarker(new MarkerOptions().position(parada3).title("Parada3"));
+        /*----------------------*/
+        rutas.add(new Ruta("Chapultepec",new Parada(1,"asdQqssQwe","Av. La Bamba 24, Geovillas del Puerto.",19.153184,-96.161923)));
+        rutas.add(new Ruta("Chapultepec",new Parada(5,"asdQqssQwe","Eje 1 Poniente 2647 Mz. 161Lt. 8, Fracc. Geo Villas del Puerto, Geovillas del Puerto.",19.152184, -96.160806)));
+        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Violetas, Coyol Zona D.",19.153707,-96.157326)));
+        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Cerro Azul, Coyol Zona D.",19.154959,-96.155167)));
+        /*----------------------*/
+        for(Ruta rt: rutas){
+            prd = rt.getparada(0);
+            lt = new LatLng(prd.getcoordenadaX(),prd.getcoordenadaY());
+            mMap.addMarker(new MarkerOptions().position(lt).title(prd.getdireccion()));
+        }
+        /*----------------------*/
         UbicacionUser();
     }
 
