@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_height="match_parent" android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical">
+
+    <include
+        layout="@layout/toolbar"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/toolz">
+    </include>
+
+    <AutoCompleteTextView
+        android:id="@+id/textPredic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:hint="Buscar:"/>
+
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,3 +25,4 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".mapsV" />
+</LinearLayout>
