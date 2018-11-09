@@ -49,9 +49,10 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         /*----------------------*/
         mMap = googleMap;
         /*----------------------*/
-        rutas.add(new Ruta("Bolivar",new Parada(1,"asdQqssQwe","Bolivar fracc. asDa",18.58664,-97.23423)));
-        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Chapultepec fracc. asDa",17.78664,16.23423)));
-        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Petrolera fracc. asDa",17.78664,16.23423)));
+        rutas.add(new Ruta("Chapultepec",new Parada(1,"asdQqssQwe","Av. La Bamba 24, Geovillas del Puerto.",19.153184,-96.161923)));
+        rutas.add(new Ruta("Chapultepec",new Parada(5,"asdQqssQwe","Eje 1 Poniente 2647 Mz. 161Lt. 8, Fracc. Geo Villas del Puerto, Geovillas del Puerto.",19.152184, -96.160806)));
+        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Violetas, Coyol Zona D.",19.153707,-96.157326)));
+        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Cerro Azul, Coyol Zona D.",19.154959,-96.155167)));
         /*----------------------*/
         for(Ruta rt: rutas){
             prd = rt.getparada(0);
