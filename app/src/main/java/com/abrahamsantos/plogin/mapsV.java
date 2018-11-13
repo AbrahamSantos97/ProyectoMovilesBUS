@@ -6,9 +6,12 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,7 +19,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
-import android.support.v7.widget.Toolbar;
+
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,18 +28,28 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class mapsV extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
-
+    /*----- Variables -----*/
     private GoogleMap mMap;
     private LocationManager locManager;
     private Location loc;
     private Marker marcador;
     private double Latitude = 0.0, Longitude = 0.0;
     private int clicBuscar=1;
-    ArrayList<Ruta> rutas = new ArrayList<>();
+    private DatabaseReference database = null;
+    /*----- Inicio -----*/
+    public static ArrayList<Ruta> listrutas = new ArrayList<>();
     AutoCompleteTextView Predic;
     String [] nombres= {"Juan","Juanito","Julian","Maria","Maria Fernanda"};
 
@@ -88,19 +101,22 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     @Override
     public void onMapReady(GoogleMap googleMap) {
         LatLng lt;
-        Parada prd;
+        DescargarJson(database);
         /*----------------------*/
         mMap = googleMap;
         /*----------------------*/
-        rutas.add(new Ruta("Chapultepec",new Parada(1,"asdQqssQwe","Av. La Bamba 24, Geovillas del Puerto.",19.153184,-96.161923)));
-        rutas.add(new Ruta("Chapultepec",new Parada(5,"asdQqssQwe","Eje 1 Poniente 2647 Mz. 161Lt. 8, Fracc. Geo Villas del Puerto, Geovillas del Puerto.",19.152184, -96.160806)));
-        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Violetas, Coyol Zona D.",19.153707,-96.157326)));
-        rutas.add(new Ruta("Chapultepec",new Parada(3,"asdQqssQwe","Cerro Azul, Coyol Zona D.",19.154959,-96.155167)));
-        /*----------------------*/
-        for(Ruta rt: rutas){
-            prd = rt.getparada(0);
-            lt = new LatLng(prd.getcoordenadaX(),prd.getcoordenadaY());
-            mMap.addMarker(new MarkerOptions().position(lt).title(prd.getdireccion()));
+        if(listrutas != null) {
+            /*--------------*/
+                for (Ruta rt : listrutas) {
+                    for (Parada prd : rt.paradas) {
+                        lt = new LatLng(prd.getCoordenadaX(), prd.getCoordenadaY());
+                        mMap.addMarker(new MarkerOptions().position(lt).title(prd.getDireccion()));
+                        /*Log.e("|----- Prueba -----", prd.getDireccion());*/
+                    }
+                }
+            /*--------------*/
+        }else{
+            Log.i("|----- Error -----|","La lista se encuentra vacia.");
         }
         /*----------------------*/
         UbicacionUser();
@@ -159,9 +175,64 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
             return;
         } else{
             Location lol = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 0, listener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
             Actualizar(lol);
         }
     }
-}
 
+    /*--------------- Firebase ---------------*/
+    public void DescargarJson(DatabaseReference database){
+        /*------------------*/
+        /*------------------*/
+        // Write a message to the database
+        /*instancia a la raiz de la base de datos*/
+        database = FirebaseDatabase.getInstance().getReference();
+        /*referencia a al elemento dentro de la base dde datos*/
+        DatabaseReference rutas = database.child("Rutas");
+
+        // Read from the database
+        ValueEventListener value = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                /*-------------*/
+                for(DataSnapshot item : dataSnapshot.getChildren()) {
+                    try{
+                        Ruta ruta = item.getValue(Ruta.class);
+                        Log.i("|----- RUTA -----|"," Nombre: "+ruta.getNombre());
+                        for(DataSnapshot item2 : item.getChildren()){
+                            for(DataSnapshot item3 : item2.getChildren()){
+                                Parada parada = item3.getValue(Parada.class);
+                                /*Log.i("|----- PARADA -----|"," Direccion: "+parada.getDireccion());*/
+                            }
+                        }
+                        listrutas.add(ruta);
+                        Insertardatos(listrutas);
+                    }catch(Exception e){
+                        Log.i("|----- RUTA -----|"," Error: "+e);
+                    }
+                }
+                /*Log.i("|----- Ruta0 -----|","La para de la ruta "+listrutas.get(3).getNombre()+" es: "+listrutas.get(3).getParadas().get(0).direccion);*/
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Failed to read value
+                Log.w("CancelacionDatabase", "Failed to read value.", error.toException());
+            }
+        };
+        rutas.addListenerForSingleValueEvent(value);
+    }
+    /*----------------------------------------*/
+    public static void Insertardatos(ArrayList<Ruta> nueva){
+        listrutas = nueva;
+    }
+    public void imprimir(){
+        int i =0;
+        Log.i("|----- SDASDASDA -----|","Entro a la funcion Imp.");
+        for(Ruta item : listrutas){
+            for(Parada item2 : item.getParadas()){
+                Log.i("|----- Pruba de datos -----|","Datos: "+item2.getDireccion());
+            }
+        }
+    }
+}

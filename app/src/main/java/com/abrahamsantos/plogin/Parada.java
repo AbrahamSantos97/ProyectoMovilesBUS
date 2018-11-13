@@ -1,33 +1,47 @@
 package com.abrahamsantos.plogin;
 
 public class Parada {
-    private int riesgo;
-    private String imagen,direccion;
-    private double coordenadaX,coordenadaY;
+    public int riesgo;
+    public String imagen,direccion;
+    public double coordenadaX,coordenadaY;
 
-    public Parada(int riesgo,String imagen,String direccion,double x, double y){
+    public int getRiesgo() {
+        return riesgo;
+    }
+
+    public void setRiesgo(int riesgo) {
         this.riesgo = riesgo;
+    }
+
+    public String getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(String imagen) {
         this.imagen = imagen;
+    }
+
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
         this.direccion = direccion;
-        this.coordenadaX = x;
-        this.coordenadaY = y;
     }
 
-    protected int getriesgo(){
-        return this.riesgo;
+    public double getCoordenadaX() {
+        return coordenadaX;
     }
 
-    protected String getimagen(){
-        return this.imagen;
+    public void setCoordenadaX(double coordenadaX) {
+        this.coordenadaX = coordenadaX;
     }
 
-    protected String getdireccion(){return this.direccion;}
-
-    protected double getcoordenadaX(){
-        return this.coordenadaX;
+    public double getCoordenadaY() {
+        return coordenadaY;
     }
 
-    protected double getcoordenadaY(){
-        return this.coordenadaY;
+    public void setCoordenadaY(double coordenadaY) {
+        this.coordenadaY = coordenadaY;
     }
 }
