@@ -47,12 +47,10 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     private Marker marcador;
     private double Latitude = 0.0, Longitude = 0.0;
     private int clicBuscar=1;
-    private DatabaseReference database = null;
     /*----- Inicio -----*/
-    public static ArrayList<Ruta> listrutas = new ArrayList<>();
     AutoCompleteTextView Predic;
     String [] nombres= {"Juan","Juanito","Julian","Maria","Maria Fernanda"};
-
+    /*------------------*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +62,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
     }
@@ -84,6 +83,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
                 Predic.setText("");
                 Predic.setVisibility(View.GONE);
                 InputMethodManager imn = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                assert imn != null;
                 imn.hideSoftInputFromWindow(Predic.getWindowToken(),0);
 
                 //Aqui se debe de llamar a la funcion que recoja los datos del Predic
@@ -93,32 +93,67 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     }
 
     private void LlenarAdapter() {
-        ArrayAdapter<String> adaptador =new ArrayAdapter<String>(this,android.R.layout.simple_dropdown_item_1line,nombres);
+        ArrayAdapter<String> adaptador =new ArrayAdapter<>(this,android.R.layout.simple_dropdown_item_1line,nombres);
         Predic.setThreshold(2);
         Predic.setAdapter(adaptador);
     }
 
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        LatLng lt;
-        DescargarJson(database);
-        /*----------------------*/
-        mMap = googleMap;
-        /*----------------------*/
-        if(listrutas != null) {
-            /*--------------*/
-                for (Ruta rt : listrutas) {
-                    for (Parada prd : rt.paradas) {
-                        lt = new LatLng(prd.getCoordenadaX(), prd.getCoordenadaY());
-                        mMap.addMarker(new MarkerOptions().position(lt).title(prd.getDireccion()));
-                        /*Log.e("|----- Prueba -----", prd.getDireccion());*/
+    /*--------------- Firebase ---------------*/
+    public void DescargarJson(){
+        /*------------------*/
+        DatabaseReference database;
+        final ArrayList<Ruta> listrutas = new ArrayList<>();
+        /*------------------*/
+        // Write a message to the database
+        /*instancia a la raiz de la base de datos*/
+        database = FirebaseDatabase.getInstance().getReference();
+        /*referencia a al elemento dentro de la base dde datos*/
+        DatabaseReference rutas = database.child("Rutas");
+
+        // Read from the database
+        ValueEventListener value = new ValueEventListener() {
+            @Override
+            public void  onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                /*-------------*/
+                for(DataSnapshot item : dataSnapshot.getChildren()) {
+                    try{
+                        Ruta ruta = item.getValue(Ruta.class);
+                        /*Log.i("|----- RUTA -----|"," Nombre: "+ruta.getNombre());*/
+                        for(DataSnapshot item2 : item.getChildren()){
+                            for(DataSnapshot item3 : item2.getChildren()){
+                                Parada parada = item3.getValue(Parada.class);
+                                assert ruta != null;
+                                ruta.getParadas().add(parada);
+                            }
+                        }
+                        listrutas.add(ruta);
+                    }catch(Exception e){
+                        Log.i("|----- RUTA -----|"," Error: "+e);
                     }
                 }
-            /*--------------*/
-        }else{
-            Log.i("|----- Error -----|","La lista se encuentra vacia.");
-        }
+                /*----------*/
+                Imprimir_etiquetas(listrutas);
+                /*----------*/
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Failed to read value
+                Log.w("CancelacionDatabase", "Failed to read value.", error.toException());
+            }
+        };
+        rutas.addListenerForSingleValueEvent(value);
+    }
+    /*----------------------------------------*/
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
         /*----------------------*/
+        Log.i("|----- Entro a la funcion -----|","Json");
+        DescargarJson();
+        Log.i("|----- Salio de la funcion -----|","Json");
+        /*----------------------*/
+        mMap = googleMap;
         UbicacionUser();
     }
 
@@ -172,67 +207,35 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "No se dieron los permisos", Toast.LENGTH_LONG).show();
-            return;
         } else{
+            assert locationManager != null;
             Location lol = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
             Actualizar(lol);
         }
     }
 
-    /*--------------- Firebase ---------------*/
-    public void DescargarJson(DatabaseReference database){
-        /*------------------*/
-        /*------------------*/
-        // Write a message to the database
-        /*instancia a la raiz de la base de datos*/
-        database = FirebaseDatabase.getInstance().getReference();
-        /*referencia a al elemento dentro de la base dde datos*/
-        DatabaseReference rutas = database.child("Rutas");
-
-        // Read from the database
-        ValueEventListener value = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                /*-------------*/
-                for(DataSnapshot item : dataSnapshot.getChildren()) {
-                    try{
-                        Ruta ruta = item.getValue(Ruta.class);
-                        Log.i("|----- RUTA -----|"," Nombre: "+ruta.getNombre());
-                        for(DataSnapshot item2 : item.getChildren()){
-                            for(DataSnapshot item3 : item2.getChildren()){
-                                Parada parada = item3.getValue(Parada.class);
-                                /*Log.i("|----- PARADA -----|"," Direccion: "+parada.getDireccion());*/
-                            }
-                        }
-                        listrutas.add(ruta);
-                        Insertardatos(listrutas);
-                    }catch(Exception e){
-                        Log.i("|----- RUTA -----|"," Error: "+e);
-                    }
+    public void Imprimir_etiquetas(ArrayList<Ruta> listrutas){
+        LatLng lt;
+        /*----------------------*/
+        if(listrutas != null) {
+            /*--------------*/
+            for (Ruta rt : listrutas) {
+                for (Parada prd : rt.paradas) {
+                    lt = new LatLng(prd.getCoordenadaX(), prd.getCoordenadaY());
+                    mMap.addMarker(new MarkerOptions().position(lt).title(prd.getDireccion()));
+                    /*Log.e("|----- Prueba -----", prd.getDireccion());*/
                 }
-                /*Log.i("|----- Ruta0 -----|","La para de la ruta "+listrutas.get(3).getNombre()+" es: "+listrutas.get(3).getParadas().get(0).direccion);*/
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                // Failed to read value
-                Log.w("CancelacionDatabase", "Failed to read value.", error.toException());
-            }
-        };
-        rutas.addListenerForSingleValueEvent(value);
-    }
-    /*----------------------------------------*/
-    public static void Insertardatos(ArrayList<Ruta> nueva){
-        listrutas = nueva;
-    }
-    public void imprimir(){
-        int i =0;
-        Log.i("|----- SDASDASDA -----|","Entro a la funcion Imp.");
-        for(Ruta item : listrutas){
-            for(Parada item2 : item.getParadas()){
-                Log.i("|----- Pruba de datos -----|","Datos: "+item2.getDireccion());
-            }
+            /*--------------*/
+        }else {
+            Log.i("|----- Error -----|", "La lista se encuentra vacia.");
         }
+        /*----------------------*/
+    }
+
+    /*Funciones de prueba*/
+    public static void Datos(ArrayList<Ruta> listrutas){
+        Log.i("|----- Ruta0 -----|","La parada de la ruta "+listrutas.get(3).getNombre()+" es: "+listrutas.get(3).getParadas().get(0).direccion);
     }
 }
