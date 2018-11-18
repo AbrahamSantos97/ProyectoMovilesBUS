@@ -35,15 +35,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-interface onDataReceived {
-    void data ();
-}
-
-public class mapsV extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
+public class mapsV extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback{
     /*----- Variables -----*/
     static private GoogleMap mMap;
     private LocationManager locManager;
@@ -53,13 +50,34 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     private int clicBuscar=1;
     /*----- Inicio -----*/
     AutoCompleteTextView Predic;
-    //ArrayList<Ruta> listrutas = new ArrayList<>();
-    static Vars lista = new Vars();
-    String [] nombres = new String[15];
-    /*{"Juan","Juanito","Julian","Maria","Maria Fernanda"}*/
+    /*Interfaces*/
+    onDataReceived data = new onDataReceived() {
+        ArrayList<Ruta> lista;
+        String[] nombre;
+        @Override
+        public void setRutas(ArrayList<Ruta> nuevo) {
+            this.lista = nuevo;
+            /*Es obligatorio almacenarlos en este punto, dado que en este punto del sistema, la informacion
+            se a descargado por completo al programa*/
+            Imprimir_etiquetas(data.getRutas());
+            LlenarAdapter();
+        }
 
+        @Override
+        public ArrayList<Ruta> getRutas() {
+            return this.lista;
+        }
 
-    onDataReceived dataReceivedListener;
+        @Override
+        public void setNombres(String[] nombre) {
+            this.nombre = nombre;
+        }
+
+        @Override
+        public String[] getNombres() {
+            return this.nombre;
+        }
+    };
     /*------------------*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,19 +86,15 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         Toolbar toolt = findViewById(R.id.toolz);
         Predic = findViewById(R.id.textPredic);
         setSupportActionBar(toolt);
-
-        dataReceivedListener = new onDataReceived () {
-            @Override
-            public void data () {
-                Datos ();
-            }
-        };
-
+        DescargarJson();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        assert mapFragment != null;
-        mapFragment.getMapAsync(this);
+        try{
+            mapFragment.getMapAsync(this);
+        }catch(Exception e){
+            Log.i("|--- Error(Mapa) ---|",""+e);
+        }
 
     }
 
@@ -94,22 +108,30 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
             if(clicBuscar==1){
                 Predic.setVisibility(View.VISIBLE);
                 clicBuscar=2;
-                LlenarAdapter();
             }else{
                 clicBuscar=1;
                 Predic.setText("");
                 Predic.setVisibility(View.GONE);
                 InputMethodManager imn = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                assert imn != null;
-                imn.hideSoftInputFromWindow(Predic.getWindowToken(),0);
-                //Aqui se debe de llamar a la funcion que recoja los datos del Predic
+                try {
+                    imn.hideSoftInputFromWindow(Predic.getWindowToken(), 0);
+                }catch(Exception e){
+                    Log.i("|--- Error(ItemSelected) ---|",""+e);
+                }
             }
         }
         return true;
     }
 
     private void LlenarAdapter() {
-        ArrayAdapter<String> adaptador =new ArrayAdapter<>(this,android.R.layout.simple_dropdown_item_1line,nombres);
+        String [] nombres = new String[data.getRutas().size()];
+
+        for(int k=0; k < nombres.length;k++){
+            nombres[k] = data.getRutas().get(k).getNombre();
+        }
+        data.setNombres(nombres);
+
+        ArrayAdapter<String> adaptador =new ArrayAdapter<>(this,android.R.layout.simple_dropdown_item_1line,data.getNombres());
         Predic.setThreshold(2);
         Predic.setAdapter(adaptador);
     }
@@ -129,22 +151,18 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         ValueEventListener value = new ValueEventListener() {
             @Override
             public void  onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ArrayList<Ruta> nuevo = new ArrayList<>();
                 /*-------------*/
                 for(DataSnapshot item : dataSnapshot.getChildren()) {
                     try{
                         Ruta ruta = item.getValue(Ruta.class);
-                        //listrutas.add(ruta);
-                        lista.listrutas.add(ruta);
+                        nuevo.add(ruta);
                     }catch(Exception e){
                         Log.i("|----- RUTA -----|"," Error: "+e);
                     }
                 }
                 /*----------*/
-                Imprimir_etiquetas();
-                dataReceivedListener.data ();
-                //Buscador_rutas(listrutas);
-                /*----------*/
-                //Datos();
+                data.setRutas(nuevo);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
@@ -160,11 +178,6 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     @Override
     public void onMapReady(GoogleMap googleMap) {
         /*----------------------*/
-        Log.i("|----- Entro a la funcion -----|","Json");
-        DescargarJson();
-        Log.i("|----- Salio de la funcion -----|","Json");
-        /*----------------------*/
-        //Datos();
         mMap = googleMap;
         UbicacionUser();
     }
@@ -172,7 +185,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     private void AgregarMarcador(double Latitude, double Longitude) {
         LatLng user = new LatLng(Latitude, Longitude);
         CameraUpdate ubicacion =CameraUpdateFactory.newLatLngZoom(user,18);
-        if(marcador!=null){
+        if(marcador != null){
             marcador.remove();
         }
         marcador = mMap.addMarker(new MarkerOptions().position(user).title("Usuario"));
@@ -180,10 +193,12 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     }
 
     private void Actualizar(Location location) {
-        if (location != null){
+        try{
             Latitude = location.getLatitude();
             Longitude = location.getLongitude();
             AgregarMarcador(Latitude,Longitude);
+        }catch(Exception e){
+            Log.i("|--- Error(Actualizar) ---|",""+e);
         }
 
     }
@@ -214,50 +229,31 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         }
     };
 
+    private void Imprimir_etiquetas(ArrayList<Ruta> lista){
+        LatLng lt;
+        for(Ruta ruta:lista){
+            for(Parada pd:ruta.getParada()){
+                lt = new LatLng(pd.getCoordenadaX(),pd.getCoordenadaY());
+                mMap.addMarker(new MarkerOptions().position(lt).title(pd.direccion));
+            }
+        }
+    }
+
     private void UbicacionUser() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "No se dieron los permisos", Toast.LENGTH_LONG).show();
         } else{
-            assert locationManager != null;
-            Location lol = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
-            Actualizar(lol);
-        }
-    }
-
-    public static void Imprimir_etiquetas(){
-        LatLng lt;
-        /*----------------------*/
-        if(lista.listrutas != null) {
-            /*--------------*/
-            for (Ruta rt : lista.listrutas) {
-                for (Parada prd : rt.getParada()) {
-                    lt = new LatLng(prd.getCoordenadaX(), prd.getCoordenadaY());
-                    mMap.addMarker(new MarkerOptions().position(lt).title(prd.getDireccion()));
-                    /*Log.e("|----- Prueba -----", prd.getDireccion());*/
-                }
+            try {
+                Location lol = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
+                Actualizar(lol);
+            }catch(Exception e){
+                Log.i("|--- Error(UbicacionUser) ---|",""+e);
             }
-            /*--------------*/
-        }else {
-            Log.i("|----- Error -----|", "La lista se encuentra vacia.");
         }
-        /*----------------------*/
     }
 
-    public void Buscador_rutas(ArrayList<Ruta> lista){
-        int i = 0;
-        for(Ruta rt : lista){
-            nombres[i] = rt.getNombre();
-            i++;
-        }
-
-    }
-
-    /*Funciones de prueba*/
-    public static void Datos(){
-        Log.i("|----- Ruta0 -----|","La parada de la ruta "+lista.listrutas.get(0).getNombre()+" es: "+lista.listrutas.get(0).getParada().get(0).direccion);
-    }
 
 }
