@@ -39,6 +39,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+interface onDataReceived {
+    void data ();
+}
+
 public class mapsV extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
     /*----- Variables -----*/
     static private GoogleMap mMap;
@@ -49,9 +53,13 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     private int clicBuscar=1;
     /*----- Inicio -----*/
     AutoCompleteTextView Predic;
-    ArrayList<Ruta> listrutas = new ArrayList<>();
+    //ArrayList<Ruta> listrutas = new ArrayList<>();
+    static Vars lista = new Vars();
     String [] nombres = new String[15];
     /*{"Juan","Juanito","Julian","Maria","Maria Fernanda"}*/
+
+
+    onDataReceived dataReceivedListener;
     /*------------------*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +67,15 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         setContentView(R.layout.activity_maps_v);
         Toolbar toolt = findViewById(R.id.toolz);
         Predic = findViewById(R.id.textPredic);
-
         setSupportActionBar(toolt);
+
+        dataReceivedListener = new onDataReceived () {
+            @Override
+            public void data () {
+                Datos ();
+            }
+        };
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -100,7 +115,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     }
 
     /*--------------- Firebase ---------------*/
-    public static void DescargarJson(){
+    public void DescargarJson(){
         /*------------------*/
         DatabaseReference database;
         /*------------------*/
@@ -111,7 +126,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         DatabaseReference rutas = database.child("Rutas");
 
         // Read from the database
-        rutas.addValueEventListener(new ValueEventListener() {
+        ValueEventListener value = new ValueEventListener() {
             @Override
             public void  onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 /*-------------*/
@@ -119,24 +134,26 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
                     try{
                         Ruta ruta = item.getValue(Ruta.class);
                         //listrutas.add(ruta);
-                        Vars.listrutas.add(ruta);
+                        lista.listrutas.add(ruta);
                     }catch(Exception e){
                         Log.i("|----- RUTA -----|"," Error: "+e);
                     }
                 }
                 /*----------*/
                 Imprimir_etiquetas();
+                dataReceivedListener.data ();
                 //Buscador_rutas(listrutas);
                 /*----------*/
                 //Datos();
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 // Failed to read value
                 Log.w("CancelacionDatabase", "Failed to read value.", error.toException());
             }
-        });
+        };
+
+        rutas.addValueEventListener(value);
     }
     /*----------------------------------------*/
 
@@ -147,7 +164,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         DescargarJson();
         Log.i("|----- Salio de la funcion -----|","Json");
         /*----------------------*/
-        Datos();
+        //Datos();
         mMap = googleMap;
         UbicacionUser();
     }
@@ -213,9 +230,9 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     public static void Imprimir_etiquetas(){
         LatLng lt;
         /*----------------------*/
-        if(Vars.listrutas != null) {
+        if(lista.listrutas != null) {
             /*--------------*/
-            for (Ruta rt : Vars.listrutas) {
+            for (Ruta rt : lista.listrutas) {
                 for (Parada prd : rt.getParada()) {
                     lt = new LatLng(prd.getCoordenadaX(), prd.getCoordenadaY());
                     mMap.addMarker(new MarkerOptions().position(lt).title(prd.getDireccion()));
@@ -240,6 +257,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
 
     /*Funciones de prueba*/
     public static void Datos(){
-        Log.i("|----- Ruta0 -----|","La parada de la ruta "+Vars.listrutas.get(0).getNombre()+" es: "+Vars.listrutas.get(3).getParada().get(0).direccion);
+        Log.i("|----- Ruta0 -----|","La parada de la ruta "+lista.listrutas.get(0).getNombre()+" es: "+lista.listrutas.get(0).getParada().get(0).direccion);
     }
+
 }
