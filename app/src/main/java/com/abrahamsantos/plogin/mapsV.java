@@ -78,64 +78,6 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
             return this.nombre;
         }
     };
-    /*------------------*/
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps_v);
-        Toolbar toolt = findViewById(R.id.toolz);
-        Predic = findViewById(R.id.textPredic);
-        setSupportActionBar(toolt);
-        DescargarJson();
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        try{
-            mapFragment.getMapAsync(this);
-        }catch(Exception e){
-            Log.i("|--- Error(Mapa) ---|",""+e);
-        }
-
-    }
-
-    public boolean onCreateOptionsMenu(Menu menu){
-        getMenuInflater().inflate(R.menu.menu,menu);
-        return true;
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item){
-        if(item.getItemId()==R.id.busca){
-            if(clicBuscar==1){
-                Predic.setVisibility(View.VISIBLE);
-                clicBuscar=2;
-            }else{
-                clicBuscar=1;
-                Predic.setText("");
-                Predic.setVisibility(View.GONE);
-                InputMethodManager imn = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                try {
-                    imn.hideSoftInputFromWindow(Predic.getWindowToken(), 0);
-                }catch(Exception e){
-                    Log.i("|--- Error(ItemSelected) ---|",""+e);
-                }
-            }
-        }
-        return true;
-    }
-
-    private void LlenarAdapter() {
-        String [] nombres = new String[data.getRutas().size()];
-
-        for(int k=0; k < nombres.length;k++){
-            nombres[k] = data.getRutas().get(k).getNombre();
-        }
-        data.setNombres(nombres);
-
-        ArrayAdapter<String> adaptador =new ArrayAdapter<>(this,android.R.layout.simple_dropdown_item_1line,data.getNombres());
-        Predic.setThreshold(2);
-        Predic.setAdapter(adaptador);
-    }
-
     /*--------------- Firebase ---------------*/
     public void DescargarJson(){
         /*------------------*/
@@ -173,15 +115,71 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
 
         rutas.addValueEventListener(value);
     }
-    /*----------------------------------------*/
+    /*---------- Almacenar nombres ------------*/
+    private void LlenarAdapter() {
+        String [] nombres = new String[data.getRutas().size()];
 
+        for(int k=0; k < nombres.length;k++){
+            nombres[k] = data.getRutas().get(k).getNombre();
+        }
+        data.setNombres(nombres);
+
+        ArrayAdapter<String> adaptador =new ArrayAdapter<>(this,android.R.layout.simple_dropdown_item_1line,data.getNombres());
+        Predic.setThreshold(2);
+        Predic.setAdapter(adaptador);
+    }
+    /*----------- Creando Actividad -----------*/
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_maps_v);
+        Toolbar toolt = findViewById(R.id.toolz);
+        Predic = findViewById(R.id.textPredic);
+        setSupportActionBar(toolt);
+        DescargarJson();
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        try{
+            mapFragment.getMapAsync(this);
+        }catch(Exception e){
+            Log.i("|--- Error(Mapa) ---|",""+e);
+        }
+
+    }
+    /*-------------- MapaCreado ---------------*/
     @Override
     public void onMapReady(GoogleMap googleMap) {
         /*----------------------*/
         mMap = googleMap;
         UbicacionUser();
     }
-
+    /*-------------- CreandoMenu --------------*/
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.menu,menu);
+        return true;
+    }
+    /*-------------- Seleccion de items -------*/
+    public boolean onOptionsItemSelected(MenuItem item){
+        if(item.getItemId()==R.id.busca){
+            if(clicBuscar==1){
+                Predic.setVisibility(View.VISIBLE);
+                clicBuscar=2;
+            }else{
+                clicBuscar=1;
+                Predic.setText("");
+                Predic.setVisibility(View.GONE);
+                InputMethodManager imn = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                try {
+                    imn.hideSoftInputFromWindow(Predic.getWindowToken(), 0);
+                }catch(Exception e){
+                    Log.i("|--- Error(ItemSelected) ---|",""+e);
+                }
+            }
+        }
+        return true;
+    }
+    /*-------------- Crear un marcador --------*/
     private void AgregarMarcador(double Latitude, double Longitude) {
         LatLng user = new LatLng(Latitude, Longitude);
         CameraUpdate ubicacion =CameraUpdateFactory.newLatLngZoom(user,18);
@@ -191,7 +189,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         marcador = mMap.addMarker(new MarkerOptions().position(user).title("Usuario"));
         mMap.animateCamera(ubicacion);
     }
-
+    /*--- Actualiza la localizacion del usuario -----*/
     private void Actualizar(Location location) {
         try{
             Latitude = location.getLatitude();
@@ -202,7 +200,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         }
 
     }
-
+    /*--- ??Metoso heredado o implementado ?? ---*/
     LocationListener listener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
@@ -228,7 +226,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
 
         }
     };
-
+    /*--- Imprime las etiquetas descargadas por firebase ---*/
     private void Imprimir_etiquetas(ArrayList<Ruta> lista){
         LatLng lt;
         for(Ruta ruta:lista){
@@ -238,7 +236,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
             }
         }
     }
-
+    /*-- Optiene la ultima ubicacion del usuario ---*/
     private void UbicacionUser() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
