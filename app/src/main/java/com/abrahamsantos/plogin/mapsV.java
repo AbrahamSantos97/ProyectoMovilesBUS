@@ -2,11 +2,13 @@ package com.abrahamsantos.plogin;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -48,6 +50,9 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     private Marker marcador;
     private double Latitude = 0.0, Longitude = 0.0;
     private int clicBuscar=1;
+    /*-------------------*/
+    Bundle info = new Bundle();
+    Intent intentR = new Intent(this, MenuRuta.class);
     /*----- Inicio -----*/
     AutoCompleteTextView Predic;
     /*Interfaces*/
@@ -57,10 +62,12 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         @Override
         public void setRutas(ArrayList<Ruta> nuevo) {
             this.lista = nuevo;
-            /*Es obligatorio almacenarlos en este punto, dado que en este punto del sistema, la informacion
+            /*Es obligatorio almacenar la informacion en este punto, dado que en este punto del sistema, la informacion
             se a descargado por completo al programa*/
             Imprimir_etiquetas(data.getRutas());
             LlenarAdapter();
+            info.putParcelableArrayList("Lista", (ArrayList<? extends Parcelable>) nuevo);
+            intentR.putExtra(info);
         }
 
         @Override
@@ -161,21 +168,26 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     }
     /*-------------- Seleccion de items -------*/
     public boolean onOptionsItemSelected(MenuItem item){
-        if(item.getItemId()==R.id.busca){
-            if(clicBuscar==1){
-                Predic.setVisibility(View.VISIBLE);
-                clicBuscar=2;
-            }else{
-                clicBuscar=1;
-                Predic.setText("");
-                Predic.setVisibility(View.GONE);
-                InputMethodManager imn = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                try {
-                    imn.hideSoftInputFromWindow(Predic.getWindowToken(), 0);
-                }catch(Exception e){
-                    Log.i("|--- Error(ItemSelected) ---|",""+e);
+        switch(item.getItemId()){
+            case R.id.busca:
+                if(clicBuscar==1){
+                    Predic.setVisibility(View.VISIBLE);
+                        clicBuscar=2;
+                }else{
+                    clicBuscar=1;
+                    Predic.setText("");
+                    Predic.setVisibility(View.GONE);
+                    InputMethodManager imn = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    try {
+                        imn.hideSoftInputFromWindow(Predic.getWindowToken(), 0);
+                    }catch(Exception e){
+                        Log.i("|--- Error(ItemSelected) ---|",""+e);
+                    }
                 }
-            }
+                break;
+            case R.id.menu:
+                startActivity(intentR);
+                break;
         }
         return true;
     }

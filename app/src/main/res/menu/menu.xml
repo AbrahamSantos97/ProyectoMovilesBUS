@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-<item
-    android:icon="@drawable/ic_search"
-    android:title="Buscar"
-    app:showAsAction="ifRoom"
-    android:id="@+id/busca">
-</item>
+    <item
+        android:icon="@drawable/ic_search"
+        android:title="Buscar"
+        app:showAsAction="ifRoom"
+        android:id="@+id/busca"
+    />
+    <item
+        android:icon="@mipmap/icon_menu"
+        android:id="@+id/menu"
+        android:onClick="onOptionsItemSelected"
+        android:title="Menu" />
 </menu>
