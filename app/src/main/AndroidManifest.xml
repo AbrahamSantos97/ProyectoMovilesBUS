@@ -43,6 +43,8 @@
         <activity
             android:name=".mapsV"
             android:label="@string/title_activity_maps_v"></activity>
+        <activity android:name=".MenuAct" />
+        <activity android:name=".Recycler" />
     </application>
 
 </manifest>

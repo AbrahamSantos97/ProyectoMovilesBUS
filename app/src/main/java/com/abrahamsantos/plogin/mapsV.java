@@ -50,9 +50,8 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     private Marker marcador;
     private double Latitude = 0.0, Longitude = 0.0;
     private int clicBuscar=1;
-    /*-------------------*/
-    Bundle info = new Bundle();
-    Intent intentR = new Intent(this, MenuRuta.class);
+    /*------ Intent ---------*/
+
     /*----- Inicio -----*/
     AutoCompleteTextView Predic;
     /*Interfaces*/
@@ -66,8 +65,6 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
             se a descargado por completo al programa*/
             Imprimir_etiquetas(data.getRutas());
             LlenarAdapter();
-            info.putParcelableArrayList("Lista", (ArrayList<? extends Parcelable>) nuevo);
-            intentR.putExtra(info);
         }
 
         @Override
@@ -83,6 +80,11 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         @Override
         public String[] getNombres() {
             return this.nombre;
+        }
+
+        @Override
+        public void setMenuRutas(ArrayList<Ruta> nuevo, View view){
+
         }
     };
     /*--------------- Firebase ---------------*/
@@ -111,6 +113,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
                     }
                 }
                 /*----------*/
+
                 data.setRutas(nuevo);
             }
             @Override
@@ -186,6 +189,10 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
                 }
                 break;
             case R.id.menu:
+
+                ArrayList<Ruta> nueva = new ArrayList<>();
+                Intent intentR = new Intent(getBaseContext(), MenuAct.class);
+                //intentR.putExtra ("Lista", nueva);
                 startActivity(intentR);
                 break;
         }

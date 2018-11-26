@@ -1,8 +1,9 @@
 package com.abrahamsantos.plogin;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Ruta {
+public class Ruta implements Serializable {
     public String nombre;
     public ArrayList<Parada> parada;
 
