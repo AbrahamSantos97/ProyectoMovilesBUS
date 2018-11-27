@@ -188,13 +188,17 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
                     }
                 }
                 break;
-            case R.id.menu:
 
-                ArrayList<Ruta> nueva = new ArrayList<>();
+            case R.id.menu:
                 Intent intentR = new Intent(getBaseContext(), MenuAct.class);
-                //intentR.putExtra ("Lista", nueva);
                 startActivity(intentR);
                 break;
+
+            case R.id.nueva_etiqueta:
+                Intent etiquetaN = new Intent(getBaseContext(),RegistroEtiqueta.class);
+                startActivity(etiquetaN);
+                break;
+
         }
         return true;
     }

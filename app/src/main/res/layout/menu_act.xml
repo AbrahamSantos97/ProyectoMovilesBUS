@@ -6,11 +6,4 @@
     android:id="@+id/menu_act"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/menu_act_botton1"
-        android:layout_width="match_parent"
-        android:layout_height="45dp"
-        android:text="Funciono"
-        />
-
 </LinearLayout>

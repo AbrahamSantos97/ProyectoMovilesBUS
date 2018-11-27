@@ -12,4 +12,10 @@
         android:id="@+id/menu"
         android:onClick="onOptionsItemSelected"
         android:title="Menu" />
+    <item
+        android:icon="@mipmap/ic_launcher_etiqueta_nueva"
+        android:id="@+id/nueva_etiqueta"
+        android:onClick="onOptionsItemSelected"
+        android:title="AgregarEtiqueta"
+        />
 </menu>

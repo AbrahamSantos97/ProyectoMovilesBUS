@@ -1,5 +1,6 @@
 package com.abrahamsantos.plogin;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -133,7 +134,8 @@ class MenuRutasAdapter extends RecyclerView.Adapter<MenuRutasAdapter.MenuRutaVie
             bto1.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.i("|--- BotonPresionado ---|",""+bto1.getText());
+                    Log.i("|-- BotonPresionado --|",""+bto1.getText());
+                    Activity retorn;
                 }
             });
         }
