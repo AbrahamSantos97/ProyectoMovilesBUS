@@ -1,10 +1,10 @@
 package com.abrahamsantos.plogin;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
@@ -13,22 +13,19 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -37,16 +34,17 @@ public class RegistroEtiqueta extends AppCompatActivity {
     /*--- Botones ---|*/
     Button bt1,bt2;
     /*--- Combobox ---*/
-    EditText edtx1,edxt2;
+    EditText edtx1;
     /*--- Radiobutton ---*/
-    RadioGroup rdg;
+    RadioGroup rdg1,rdg2;
     /*--- Variables de retorno ---*/
-    String Ruta,Direccion;
-    int radiobutton;
+    String Ruta,Direccion,Imagenbits;
+    int riesgo = 3;
     /*--- Camara ---*/
     private final String CARPETA_RAIZ="FotoAppRutas/";
     private final String RUTA_IMAGEN=CARPETA_RAIZ + "Fotos";
     private final int CODIGO_FOTO = 450;
+    int flag = 0;
     /*--- Ruta ---*/
     String path;
     ImageView imagen;
@@ -56,11 +54,35 @@ public class RegistroEtiqueta extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.registro_etiqueta);
 
-        edtx1 = findViewById(R.id.nombre_ruta);
-        edxt2 = findViewById(R.id.direccion);
-        rdg = findViewById(R.id.rdg1);
+        edtx1 = findViewById(R.id.direccion);
+        rdg1 = findViewById(R.id.rdg1);
+        rdg2 = findViewById(R.id.rdg2);
         bt1 = findViewById(R.id.foto);
         bt2 = findViewById(R.id.envio);
+
+
+        rdg1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch(checkedId){
+                    case R.id.rd1_1:
+                        Ruta = "Chapultepec";
+                        break;
+                    case R.id.rd1_2:
+                        Ruta = "NorteSur";
+                        break;
+                    case R.id.rd1_3:
+                        Ruta = "Bolivar";
+                        break;
+                    case R.id.rd1_4:
+                        Ruta = "Petrolera";
+                            break;
+                    case R.id.rd1_5:
+                        Ruta = "Ruta 6";
+                        break;
+                }
+            }
+        });
 
         if(validarPermisos()){
             bt1.setEnabled(true);
@@ -68,33 +90,30 @@ public class RegistroEtiqueta extends AppCompatActivity {
             bt1.setEnabled(false);
         }
 
-        /*--- EditText ---*/
-       Ruta = edtx1.getText().toString();
-       Direccion = edxt2.getText().toString();
         /*--- Menu RadioGroup ---*/
-        rdg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        rdg2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch (checkedId){
-                    case R.id.rd1:
+                    case R.id.rd2_1:
                         Log.i("|---- RadioGroup ----|","1");
-                        radiobutton = 1;
+                        riesgo = 1;
                         break;
-                    case R.id.rd2:
+                    case R.id.rd2_2:
                         Log.i("|---- RadioGroup ----|","2");
-                        radiobutton = 2;
+                        riesgo = 2;
                         break;
-                    case R.id.rd3:
+                    case R.id.rd2_3:
                         Log.i("|---- RadioGroup ----|","3");
-                        radiobutton = 3;
+                        riesgo = 3;
                         break;
-                    case R.id.rd4:
+                    case R.id.rd2_4:
                         Log.i("|---- RadioGroup ----|","4");
-                        radiobutton = 4;
+                        riesgo = 4;
                         break;
-                    case R.id.rd5:
+                    case R.id.rd2_5:
                         Log.i("|---- RadioGroup ----|","5");
-                        radiobutton = 5;
+                        riesgo = 5;
                         break;
                 }
             }
@@ -112,6 +131,28 @@ public class RegistroEtiqueta extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.i("|---- Button ----|","2");
+                /*--- EditText ---*/
+                Direccion = edtx1.getText().toString();
+                /*--- Validaciones ---*/
+                if((Ruta.isEmpty()) || (Direccion.isEmpty()) || (flag == 0)){
+                    Toast.makeText(RegistroEtiqueta.this, "Faltan elementos en el formulario",
+                            Toast.LENGTH_LONG).show();
+                }else{
+                    try {
+                        /*------------------*/
+                        Intent returnInt = new Intent();
+                        returnInt.putExtra("NombreR",Ruta);
+                        returnInt.putExtra("Direccion",Direccion);
+                        returnInt.putExtra("Riesgo",riesgo);
+                        returnInt.putExtra("Imagen",Imagenbits);
+                        setResult(Activity.RESULT_OK,returnInt);
+                        /*-----------------*/
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    finish();
+                }
+
             }
         });
     }
@@ -179,34 +220,39 @@ public class RegistroEtiqueta extends AppCompatActivity {
             return;
         }
         /*--- Formar ruta ---*/
-        String path = Environment.getExternalStorageDirectory() + File.separator + RUTA_IMAGEN + File.separator + nombre;
-        /*---  ---*/
-        File imagenf = new File(path);
-        Uri ArchivoSalida = FileProvider.getUriForFile(RegistroEtiqueta.this, getApplicationContext().getPackageName()+".provider",imagenf);
+        path = Environment.getExternalStorageDirectory() + File.separator + RUTA_IMAGEN + File.separator + nombre;
         Intent intCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intCamera.putExtra(MediaStore.EXTRA_OUTPUT,ArchivoSalida);
+
         startActivityForResult(intCamera,CODIGO_FOTO);
+        flag = 1;
     }
 
     @Override
     protected void onActivityResult(int requestCode,int resultCode,Intent data){
         super.onActivityResult(requestCode,resultCode,data);
-        if(resultCode == RESULT_OK){
-            switch (resultCode){
+        if(resultCode == RESULT_OK && data != null){
+            switch (requestCode){
                 case CODIGO_FOTO:
                     MediaScannerConnection.scanFile(this, new String[]{path}, null,
                             new MediaScannerConnection.OnScanCompletedListener() {
                         @Override
                         public void onScanCompleted(String path, Uri uri) {
-                            Log.i("|--- Ruta Alm ---|","Path"+path);
+                            Log.i("|--- Ruta Alm ---|","Path:"+path);
+
                         }
                     });
-
-                    Bitmap bitmap = BitmapFactory.decodeFile(path);
-                    imagen.setImageBitmap(bitmap);
+                    Imagenbits =  BitMapToString((Bitmap) data.getExtras().get("data"));
                     break;
             }
         }
+    }
+
+    public String BitMapToString(Bitmap bitmap){
+        ByteArrayOutputStream baos=new  ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
+        byte [] b=baos.toByteArray();
+        String temp=Base64.encodeToString(b, Base64.DEFAULT);
+        return temp;
     }
 
 }

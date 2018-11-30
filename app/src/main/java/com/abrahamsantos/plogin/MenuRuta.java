@@ -65,6 +65,11 @@ public class MenuRuta extends Fragment {
             MenuRutasAdapter adapter = new MenuRutasAdapter(rutas);
             recyclerView.setAdapter (adapter);
         }
+
+        @Override
+        public void nuevaParada(ArrayList<Ruta> lista_ruta) {
+
+        }
     };
 
     @Nullable

@@ -60,5 +60,4 @@
         <activity android:name=".Recycler" />
         <activity android:name=".RegistroEtiqueta"/>
     </application>
-
 </manifest>

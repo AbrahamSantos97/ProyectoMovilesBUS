@@ -1,18 +1,25 @@
 package com.abrahamsantos.plogin;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.constraint.solver.widgets.Snapshot;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
+import android.util.EventLog;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +27,8 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -27,15 +36,18 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -46,12 +58,15 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     /*----- Variables -----*/
     static private GoogleMap mMap;
     private LocationManager locManager;
-    private Location loc;
+    private LatLng user;
     private Marker marcador;
     private double Latitude = 0.0, Longitude = 0.0;
     private int clicBuscar=1;
-    /*------ Intent ---------*/
-
+    /*------ IntentResult EtiquetaRegistro ---------*/
+    private final int CODIGO_REGETI = 100;
+    String NombreR,Direccion,ImagenRE;
+    int Riesgo;
+    Bitmap bitmap;
     /*----- Inicio -----*/
     AutoCompleteTextView Predic;
     /*Interfaces*/
@@ -84,8 +99,29 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
 
         @Override
         public void setMenuRutas(ArrayList<Ruta> nuevo, View view){
-
         }
+
+        @Override
+        public void nuevaParada(ArrayList<Ruta> lista_ruta) {
+            HashMap<String,Object> hashMap = new HashMap<>();
+            int i=0;
+            Parada nueva_parada = new Parada();
+            nueva_parada.coordenadaX = user.latitude;
+            nueva_parada.coordenadaY = user.longitude;
+            nueva_parada.direccion = Direccion;
+            nueva_parada.riesgo = Riesgo;
+            nueva_parada.imagen = ImagenRE;
+            for(Ruta ruta:lista_ruta){
+                if(ruta.getNombre().equals(NombreR)){
+                    lista_ruta.get(i).getParada().add(nueva_parada);
+                    hashMap.put("Ruta"+i,lista_ruta.get(i));
+                }
+                i++;
+            }
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+            databaseReference.child("Rutas").updateChildren(hashMap);
+        }
+
     };
     /*--------------- Firebase ---------------*/
     public void DescargarJson(){
@@ -196,7 +232,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
 
             case R.id.nueva_etiqueta:
                 Intent etiquetaN = new Intent(getBaseContext(),RegistroEtiqueta.class);
-                startActivity(etiquetaN);
+                startActivityForResult(etiquetaN,CODIGO_REGETI);
                 break;
 
         }
@@ -223,15 +259,19 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         }
 
     }
-    /*--- ??Metoso heredado o implementado ?? ---*/
+    /*--- ??Metodos heredado o implementado ?? ---*/
     LocationListener listener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            LatLng user = new LatLng(location.getLatitude(),location.getLongitude());
+            user = new LatLng(location.getLatitude(),location.getLongitude());
             if(marcador!=null){
                 marcador.remove();
             }
-            marcador = mMap.addMarker(new MarkerOptions().position(user).title("Usuario"));
+            marcador = mMap.addMarker(new MarkerOptions()
+                    .position(user)
+                    .title("Usuario")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+            );
         }
 
         @Override
@@ -255,7 +295,14 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         for(Ruta ruta:lista){
             for(Parada pd:ruta.getParada()){
                 lt = new LatLng(pd.getCoordenadaX(),pd.getCoordenadaY());
-                mMap.addMarker(new MarkerOptions().position(lt).title(pd.direccion));
+                /*--- Agregar etiqueta ---*/
+                mMap.addMarker(new MarkerOptions()
+                        .position(lt)
+                        .title(pd.direccion)
+                        .snippet(pd.getImagen())
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                );
+                mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(mapsV.this));
             }
         }
     }
@@ -275,6 +322,44 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
             }
         }
     }
+    /*--- Resultado de EtiquetaRegistro ---*/
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(resultCode == Activity.RESULT_OK){
+            switch(requestCode){
+                case CODIGO_REGETI:
+                    /*Recivir datos del registro ET*/
+                    NombreR = data.getStringExtra("NombreR");
+                    Direccion = data.getStringExtra("Direccion");
+                    Riesgo = data.getIntExtra("Riesgo",Riesgo);
+                    ImagenRE = data.getStringExtra("Imagen");
+                    EnviarInformacion();
+                    break;
+            }
+        }
+    }
 
+    private void EnviarInformacion() {
+        /*--- Instancia a la base de datos ---*/
+        DatabaseReference mDatabase;
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabase.child("Rutas").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ArrayList<Ruta> lista_rutas = new ArrayList<>();
+                for(DataSnapshot data : dataSnapshot.getChildren()){
+                    Ruta ruta = data.getValue(Ruta.class);
+                    lista_rutas.add(ruta);
+                }
+                data.nuevaParada(lista_rutas);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
 
 }

@@ -23,14 +23,59 @@
         android:textColor="#fff"
         />
 
-    <EditText
-        android:id="@+id/nombre_ruta"
+    <RadioGroup
         android:layout_width="match_parent"
-        android:layout_height="35dp"
+        android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:background="#B8B6BB"
-        android:hint="Escribe el nombre de la ruta"
-        android:inputType="textPersonName" />
+        android:orientation="vertical"
+        android:id="@+id/rdg1"
+        >
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:text="Chapultepec"
+            android:checked="false"
+            android:id="@+id/rd1_1"
+            />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:text="NorteSur"
+            android:checked="false"
+            android:id="@+id/rd1_2"
+            />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:text="Petrolera"
+            android:checked="false"
+            android:id="@+id/rd1_3"
+            />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:text="Bolivar"
+            android:checked="false"
+            android:id="@+id/rd1_4"
+            />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:text="Ruta 6"
+            android:checked="false"
+            android:id="@+id/rd1_5"
+            />
+
+    </RadioGroup>
 
     <EditText
         android:id="@+id/direccion"
@@ -61,7 +106,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:orientation="horizontal"
-        android:id="@+id/rdg1"
+        android:id="@+id/rdg2"
         >
         <RadioButton
             android:layout_width="wrap_content"
@@ -69,7 +114,7 @@
             android:layout_marginHorizontal="10dp"
             android:text="1"
             android:checked="false"
-            android:id="@+id/rd1"
+            android:id="@+id/rd2_1"
             />
 
         <RadioButton
@@ -78,7 +123,7 @@
             android:layout_marginHorizontal="10dp"
             android:text="2"
             android:checked="false"
-            android:id="@+id/rd2"
+            android:id="@+id/rd2_2"
             />
 
         <RadioButton
@@ -87,7 +132,7 @@
             android:layout_marginHorizontal="10dp"
             android:text="3"
             android:checked="false"
-            android:id="@+id/rd3"
+            android:id="@+id/rd2_3"
             />
 
         <RadioButton
@@ -96,7 +141,7 @@
             android:layout_marginHorizontal="10dp"
             android:text="4"
             android:checked="false"
-            android:id="@+id/rd4"
+            android:id="@+id/rd2_4"
             />
 
         <RadioButton
@@ -105,7 +150,7 @@
             android:layout_marginHorizontal="10dp"
             android:text="5"
             android:checked="false"
-            android:id="@+id/rd5"
+            android:id="@+id/rd2_5"
             />
 
     </RadioGroup>
