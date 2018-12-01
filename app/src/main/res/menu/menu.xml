@@ -2,20 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:icon="@drawable/ic_search"
-        android:title="Buscar"
-        app:showAsAction="ifRoom"
-        android:id="@+id/busca"
-    />
-    <item
         android:icon="@mipmap/icon_menu"
         android:id="@+id/menu"
         android:onClick="onOptionsItemSelected"
-        android:title="Menu" />
+        android:title="Guia de rutas" />
     <item
         android:icon="@mipmap/ic_launcher_etiqueta_nueva"
         android:id="@+id/nueva_etiqueta"
         android:onClick="onOptionsItemSelected"
-        android:title="AgregarEtiqueta"
+        android:title="Agregar una parada"
         />
 </menu>

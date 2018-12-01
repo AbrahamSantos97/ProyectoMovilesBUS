@@ -36,6 +36,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -79,22 +80,11 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
             /*Es obligatorio almacenar la informacion en este punto, dado que en este punto del sistema, la informacion
             se a descargado por completo al programa*/
             Imprimir_etiquetas(data.getRutas());
-            LlenarAdapter();
         }
 
         @Override
         public ArrayList<Ruta> getRutas() {
             return this.lista;
-        }
-
-        @Override
-        public void setNombres(String[] nombre) {
-            this.nombre = nombre;
-        }
-
-        @Override
-        public String[] getNombres() {
-            return this.nombre;
         }
 
         @Override
@@ -123,6 +113,27 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         }
 
     };
+
+    /*----------- Creando Actividad -----------*/
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_maps_v);
+        Toolbar toolt = findViewById(R.id.toolz);
+        Predic = findViewById(R.id.textPredic);
+        setSupportActionBar(toolt);
+        DescargarJson();
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        try{
+            mapFragment.getMapAsync(this);
+        }catch(Exception e){
+            Log.i("|--- Error(Mapa) ---|",""+e);
+        }
+
+    }
+
     /*--------------- Firebase ---------------*/
     public void DescargarJson(){
         /*------------------*/
@@ -149,7 +160,6 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
                     }
                 }
                 /*----------*/
-
                 data.setRutas(nuevo);
             }
             @Override
@@ -160,38 +170,6 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         };
 
         rutas.addValueEventListener(value);
-    }
-    /*---------- Almacenar nombres ------------*/
-    private void LlenarAdapter() {
-        String [] nombres = new String[data.getRutas().size()];
-
-        for(int k=0; k < nombres.length;k++){
-            nombres[k] = data.getRutas().get(k).getNombre();
-        }
-        data.setNombres(nombres);
-
-        ArrayAdapter<String> adaptador =new ArrayAdapter<>(this,android.R.layout.simple_dropdown_item_1line,data.getNombres());
-        Predic.setThreshold(2);
-        Predic.setAdapter(adaptador);
-    }
-    /*----------- Creando Actividad -----------*/
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps_v);
-        Toolbar toolt = findViewById(R.id.toolz);
-        Predic = findViewById(R.id.textPredic);
-        setSupportActionBar(toolt);
-        DescargarJson();
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        try{
-            mapFragment.getMapAsync(this);
-        }catch(Exception e){
-            Log.i("|--- Error(Mapa) ---|",""+e);
-        }
-
     }
     /*-------------- MapaCreado ---------------*/
     @Override
@@ -208,23 +186,6 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     /*-------------- Seleccion de items -------*/
     public boolean onOptionsItemSelected(MenuItem item){
         switch(item.getItemId()){
-            case R.id.busca:
-                if(clicBuscar==1){
-                    Predic.setVisibility(View.VISIBLE);
-                        clicBuscar=2;
-                }else{
-                    clicBuscar=1;
-                    Predic.setText("");
-                    Predic.setVisibility(View.GONE);
-                    InputMethodManager imn = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    try {
-                        imn.hideSoftInputFromWindow(Predic.getWindowToken(), 0);
-                    }catch(Exception e){
-                        Log.i("|--- Error(ItemSelected) ---|",""+e);
-                    }
-                }
-                break;
-
             case R.id.menu:
                 Intent intentR = new Intent(getBaseContext(), MenuAct.class);
                 startActivity(intentR);
@@ -292,20 +253,49 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     /*--- Imprime las etiquetas descargadas por firebase ---*/
     private void Imprimir_etiquetas(ArrayList<Ruta> lista){
         LatLng lt;
+        String nombre_ruta;
         for(Ruta ruta:lista){
+            nombre_ruta = ruta.getNombre();
+            BitmapDescriptor bitmapDescriptor = colorearRuta(nombre_ruta);
             for(Parada pd:ruta.getParada()){
                 lt = new LatLng(pd.getCoordenadaX(),pd.getCoordenadaY());
                 /*--- Agregar etiqueta ---*/
                 mMap.addMarker(new MarkerOptions()
                         .position(lt)
-                        .title(pd.direccion)
+                        .title(nombre_ruta)
                         .snippet(pd.getImagen())
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                        .icon(bitmapDescriptor)
                 );
                 mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(mapsV.this));
             }
         }
     }
+
+    private BitmapDescriptor colorearRuta(String nombre_ruta) {
+        BitmapDescriptor descriptor = null;
+        switch(nombre_ruta){
+            case "Chapultepec":
+                descriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
+                break;
+            case "NorteSur":
+                descriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+                break;
+            case "Bolivar":
+                descriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+                break;
+            case "Petrolera":
+                descriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET);
+                break;
+            case "Ruta 6":
+                descriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW);
+                break;
+            default:
+                Log.i("|--- ColorMarker ---|", "Caso default");
+                break;
+           }
+           return descriptor;
+    }
+
     /*-- Optiene la ultima ubicacion del usuario ---*/
     private void UbicacionUser() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
