@@ -1,12 +1,7 @@
 package com.abrahamsantos.plogin;
 
-import android.content.Intent;
 import android.view.View;
-import android.widget.ArrayAdapter;
 
-import com.google.android.gms.maps.model.LatLng;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public interface onDataReceived {
