@@ -12,14 +12,13 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AutoCompleteTextView;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -47,23 +46,19 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     private LatLng user;
     private Marker marcador;
     private double Latitude = 0.0, Longitude = 0.0;
-    private int clicBuscar=1;
+    private int CAMARA = 0;
     /*------ IntentResult EtiquetaRegistro ---------*/
     private final int CODIGO_REGETI = 100;
     String NombreR,Direccion,ImagenRE;
     int Riesgo;
     Bitmap bitmap;
     /*----- Inicio -----*/
-    AutoCompleteTextView Predic;
     /*Interfaces*/
     onDataReceived data = new onDataReceived() {
         ArrayList<Ruta> lista;
-        String[] nombre;
         @Override
         public void setRutas(ArrayList<Ruta> nuevo) {
             this.lista = nuevo;
-            /*Es obligatorio almacenar la informacion en este punto, dado que en este punto del sistema, la informacion
-            se a descargado por completo al programa*/
             Imprimir_etiquetas(data.getRutas());
         }
 
@@ -105,8 +100,8 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps_v);
         Toolbar toolt = findViewById(R.id.toolz);
-        Predic = findViewById(R.id.textPredic);
         setSupportActionBar(toolt);
+        UbicacionUser();
         DescargarJson();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -161,7 +156,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
     public void onMapReady(GoogleMap googleMap) {
         /*----------------------*/
         mMap = googleMap;
-        UbicacionUser();
+        Localizacion();
     }
     /*-------------- CreandoMenu --------------*/
     public boolean onCreateOptionsMenu(Menu menu){
@@ -184,57 +179,51 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
         }
         return true;
     }
-    /*-------------- Crear un marcador --------*/
-    private void AgregarMarcador(double Latitude, double Longitude) {
-        LatLng user = new LatLng(Latitude, Longitude);
-        CameraUpdate ubicacion =CameraUpdateFactory.newLatLngZoom(user,18);
-        if(marcador != null){
-            marcador.remove();
-        }
-        marcador = mMap.addMarker(new MarkerOptions().position(user).title("Usuario"));
-        mMap.animateCamera(ubicacion);
-    }
-    /*--- Actualiza la localizacion del usuario -----*/
-    private void Actualizar(Location location) {
-        try{
-            Latitude = location.getLatitude();
-            Longitude = location.getLongitude();
-            AgregarMarcador(Latitude,Longitude);
-        }catch(Exception e){
-            Log.i("|--- Error(Actualizar) ---|",""+e);
-        }
 
-    }
-    /*--- ??Metodos heredado o implementado ?? ---*/
-    LocationListener listener = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-            user = new LatLng(location.getLatitude(),location.getLongitude());
-            if(marcador!=null){
-                marcador.remove();
+    private void Localizacion(){
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        LocationListener listener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                user = new LatLng(location.getLatitude(),location.getLongitude());
+                if(marcador!=null){
+                    marcador.remove();
+
+                }
+                marcador = mMap.addMarker(new MarkerOptions()
+                        .position(user)
+                        .title("Usuario")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+                );
+                if(CAMARA == 0) {
+                    CameraUpdate ubicacion = CameraUpdateFactory.newLatLngZoom(user, 16);
+                    mMap.animateCamera(ubicacion);
+                    CAMARA = 1;
+                }
             }
-            marcador = mMap.addMarker(new MarkerOptions()
-                    .position(user)
-                    .title("Usuario")
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-            );
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        };
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5, listener);
+        }catch (Exception e){
+            Localizacion();
         }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
-    };
+    }
     /*--- Imprime las etiquetas descargadas por firebase ---*/
     private void Imprimir_etiquetas(ArrayList<Ruta> lista){
         LatLng lt;
@@ -283,18 +272,17 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
 
     /*-- Obtiene la ultima ubicacion del usuario ---*/
     private void UbicacionUser() {
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "No se dieron los permisos", Toast.LENGTH_LONG).show();
-        } else{
-            try {
-                Location lol = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
-                Actualizar(lol);
-            }catch(Exception e){
-                Log.i("|--- Error(UbicacionUser) ---|",""+e);
+        int permissionCheck = ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION);
+        if(permissionCheck == PackageManager.PERMISSION_DENIED){
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_FINE_LOCATION)){
+            }else {
+                try {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                }catch (Exception e){
+                    Log.i("|---|","|----|");
+                }
             }
+            Localizacion();
         }
     }
     /*--- Resultado de EtiquetaRegistro ---*/
