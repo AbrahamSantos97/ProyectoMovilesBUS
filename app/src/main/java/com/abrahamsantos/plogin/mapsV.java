@@ -281,7 +281,7 @@ public class mapsV extends AppCompatActivity implements OnMapReadyCallback, Acti
            return descriptor;
     }
 
-    /*-- Optiene la ultima ubicacion del usuario ---*/
+    /*-- Obtiene la ultima ubicacion del usuario ---*/
     private void UbicacionUser() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
